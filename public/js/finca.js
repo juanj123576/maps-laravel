@@ -2088,7 +2088,7 @@ exports = module.exports = __webpack_require__(/*! ../../node_modules/css-loader
 
 
 // module
-exports.push([module.i, "\n#map{\n    width: 350px;\n    height: 400px;\n    position: relative;\n    left: 40px;\n    top:0px;\n}\n\n", ""]);
+exports.push([module.i, "\n#map{\r\n    width: 350px;\r\n    height: 400px;\r\n    position: relative;\r\n    left: 40px;\r\n    top:0px;\n}\r\n\r\n", ""]);
 
 // exports
 
