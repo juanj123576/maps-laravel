@@ -4,7 +4,7 @@
     <title>Geocoding Service</title>
     <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
     <script
-      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCZTrnuoWZkmS8ZxoxJM-_AELDVJrPcGyE&libraries=&v=weekly"
+      src="https://maps.googleapis.com/maps/api/js?key=&libraries=&v=weekly"
       defer
     ></script>
     <script type="text/javascript" charset="UTF-8" src="https://js.api.here.com/v3/3.1/mapsjs-core.js"></script>
@@ -51,7 +51,7 @@
     </style>
     <script>
          var platform = new H.service.Platform({
-        'apikey': '2OetLaJmz-VJNKdhDfObtZ3oWGemsOrSxjIr4CoP_4g'
+        'apikey': ''
       });
 
       var service = platform.getSearchService();
