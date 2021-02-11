@@ -23,12 +23,12 @@ mapa:mapa,
     }, created(){
 
         this.traerFincas();
-        this.traerFincasdireccion();
-
+    this.traerFincasdireccion();
 
 
 
     },
+
 
     methods:
         {
@@ -50,6 +50,15 @@ mapa:mapa,
             },
             colocarfinca(finca){
                 this.finca=finca;
+                this.$refs.mapa.calcularAutomatico(finca.direccion);
+
+            }, colocarfinca2(finca){
+                this.finca=finca;
+              /*  const map= this.$refs.mapa.map;
+                console.log(map);*/
+                this.$refs.mapa.geocodificar(finca.direccion);
+
+
 
             },
             cambiarAgregar(){

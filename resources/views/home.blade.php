@@ -35,11 +35,17 @@
 			<tbody>
 				<tr v-for="finca in fincas2">
 
-				<td v-text="finca.nombre"></td>
+				<td id="nombre" v-text="finca.nombre" ></td>
 
 					<td width="10px">
+                        @if(Auth::check())
+
                         <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#exampleModal2"
-                                @click="colocarfinca(finca)">ver distancia</button>
+                                @click="colocarfinca(finca)" >ver distancia</button>
+                        @else
+                            <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#exampleModal2"
+                                    @click="colocarfinca2(finca)" >ver distancia</button>
+                        @endif
 
 					</td>
 
@@ -176,14 +182,14 @@
                <div class="row">
                <div class="modal-body">
                    <div class="col-sm-6">
-
-<mapa :hols="finca.direccion"></mapa>
-
-
-
+            @if(Auth::check())
+                            <mapa :hols="finca.direccion" ref="mapa"></mapa>
+                       @else
+                           <mapa :hols="finca.direccion" ref="mapa" ></mapa>
+                       @endif
 
                    </div>
-
+s
 
                  </div>
                </div>
@@ -210,24 +216,13 @@
 @section('Scripts')
 
     <script
-        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCZTrnuoWZkmS8ZxoxJM-_AELDVJrPcGyE&libraries=&v=weekly"
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDKkdaJhiH3lDKHK24-vnTzeG1smZUtlyc&libraries=&v=weekly"
 
     ></script>
+
 <script src="{{ asset('js/usuario.js') }}"    ></script>
 <script src="{{ asset('js/finca.js') }}"     ></script>
 
 
-
-        <link rel="stylesheet" type="text/css" href="https://js.api.here.com/v3/3.1/mapsjs-ui.css" />
-        <script type="text/javascript" src="https://js.api.here.com/v3/3.1/mapsjs-core.js"></script>
-        <script type="text/javascript" src="https://js.api.here.com/v3/3.1/mapsjs-service.js"></script>
-        <script type="text/javascript" src="https://js.api.here.com/v3/3.1/mapsjs-ui.js"></script>
-        <script type="text/javascript" src="https://js.api.here.com/v3/3.1/mapsjs-mapevents.js"></script>
-        <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
-<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-<script>
-
-
-</script>
 
 @endsection

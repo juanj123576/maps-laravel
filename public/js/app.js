@@ -1967,28 +1967,65 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
 var _require = __webpack_require__(/*! axios */ "./node_modules/axios/index.js"),
     Axios = _require["default"];
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: "Mapa",
   props: {
-    hols: Array[10]
+    hols: String,
+    estadoMapa: {
+      type: Boolean,
+      "default": false
+    }
   },
   data: function data() {
     return {
       map: null,
       fincas: '',
-      direccion: ''
+      direccion: '',
+      fincas2: '',
+      directionsService: null,
+      directionsRenderer: null,
+      infoWindow: null,
+      geocoder: null,
+      posicion: {
+        lat: 0,
+        lng: 0
+      }
     };
   },
   created: function created() {
-    this.traerFincas();
+    if (this.estadoMapa === false) {
+      this.traerFincas();
+      console.log("hola2");
+    } else {
+      console.log("hola1");
+    }
   },
   mounted: function mounted() {
     this.createMap();
   },
   methods: {
+    traerFincas: function traerFincas() {
+      var _this2 = this;
+
+      Axios.get('/fincas').then(function (res) {
+        _this2.fincas = res.data;
+        _this2.direccion = _this2.fincas[0].direccion;
+        console.log(_this2.fincas[0].direccion);
+      });
+    },
+    traerFincasdireccion: function traerFincasdireccion() {
+      var _this3 = this;
+
+      Axios.get("/fincasUsuario/").then(function (res) {
+        _this3.fincas2 = res.data;
+      });
+    },
     createMap: function createMap() {
       this.map = new google.maps.Map(document.getElementById('map'), {
         center: {
@@ -1997,14 +2034,119 @@ var _require = __webpack_require__(/*! axios */ "./node_modules/axios/index.js")
         },
         zoom: 12
       });
+      console.log("holaaaaaaaaaaaaaaaaaaaaaaa");
+      this.directionsService = new google.maps.DirectionsService();
+      this.directionsRenderer = new google.maps.DirectionsRenderer();
+      this.geocoder = new google.maps.Geocoder();
+      this.infoWindow = new google.maps.InfoWindow();
+      document.getElementById("comienzo").addEventListener("change", this.onChangeHandler);
     },
-    traerFincas: function traerFincas() {
+    geocodificar: function geocodificar(direccion) {
       var _this = this;
 
-      Axios.get('/fincas').then(function (res) {
-        _this.fincas = res.data;
-        _this.direccion = _this.fincas[0].direccion;
-        console.log(_this.fincas[0].direccion);
+      this.geocoder.geocode({
+        'address': direccion
+      }, function (results, status) {
+        if (status == 'OK') {
+          _this.map.setCenter(results[0].geometry.location);
+
+          var marker = new google.maps.Marker({
+            map: _this.map,
+            position: results[0].geometry.location
+          });
+        } else {
+          alert('Geocode was not successful for the following reason: ' + status);
+        }
+      });
+    },
+    añadirmarcador: function aAdirmarcador() {
+      var marker = new google.maps.Marker({
+        map: this.map,
+        position: posicion
+      });
+    },
+    onChangeHandler: function onChangeHandler() {
+      this.calculateAndDisplayRoute(this.directionsService, this.directionsRenderer);
+    },
+    calculateAndDisplayRoute: function calculateAndDisplayRoute(directionsService, directionsRenderer) {
+      var _this4 = this;
+
+      directionsRenderer.setMap(null);
+      this.infoWindow.close();
+      directionsService.route({
+        origin: {
+          query: document.getElementById("comienzo").value
+        },
+        destination: {
+          query: this.hols
+        },
+        travelMode: google.maps.TravelMode.DRIVING
+      }, function (response, status) {
+        if (status === "OK") {
+          directionsRenderer.setDirections(response);
+          directionsRenderer.setMap(_this4.map);
+          console.log(response.routes[0].legs[0].duration.text);
+          var _posicion = {
+            lat: 0,
+            lng: 0
+          };
+          _posicion.lat = response.routes[0].legs[0].end_location.lat();
+          _posicion.lng = response.routes[0].legs[0].end_location.lng();
+          var duracion = response.routes[0].legs[0].duration.text;
+          var distancia = response.routes[0].legs[0].distance.text;
+          var datos = "Tiempo:" + " " + duracion + " " + "Distancia:" + " " + distancia;
+          var contentString = '<div id="content">' + "</div>" + '<div id="bodyContent">' + '<i class="fa fa-car" aria-hidden="true"></i>' + "</div>" + datos;
+          ;
+
+          _this4.infoWindow.setContent(contentString);
+
+          _this4.infoWindow.open(_this4.map);
+
+          _this4.infoWindow.setPosition(_posicion);
+        } else {
+          window.alert("Directions request failed due to " + status);
+        }
+      });
+    },
+    calcularAutomatico: function calcularAutomatico(direccion) {
+      var _this5 = this;
+
+      this.directionsRenderer.setMap(null);
+      this.infoWindow.close();
+      this.directionsService.route({
+        origin: {
+          query: this.direccion
+        },
+        destination: {
+          query: direccion
+        },
+        travelMode: google.maps.TravelMode.DRIVING
+      }, function (response, status) {
+        if (status === "OK") {
+          _this5.directionsRenderer.setDirections(response);
+
+          _this5.directionsRenderer.setMap(_this5.map);
+
+          var _posicion2 = {
+            lat: 0,
+            lng: 0
+          };
+          _posicion2.lat = response.routes[0].legs[0].end_location.lat();
+          _posicion2.lng = response.routes[0].legs[0].end_location.lng();
+          var duracion = response.routes[0].legs[0].duration.text;
+          var distancia = response.routes[0].legs[0].distance.text;
+          var datos = "Tiempo:" + " " + duracion + " " + "Distancia:" + " " + distancia;
+          var contentString = '<div id="content">' + "</div>" + '<div id="bodyContent">' + '<i class="fa fa-car" aria-hidden="true"></i>' + "</div>" + datos;
+          ;
+
+          _this5.infoWindow.setContent(contentString);
+
+          _this5.infoWindow.open(_this5.map);
+
+          _this5.infoWindow.setPosition(_posicion2);
+        } else {
+          window.alert("Directions request failed due to " + status);
+        }
       });
     }
   }
@@ -38353,9 +38495,21 @@ var render = function() {
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
   return _c("div", [
-    _c("h3", [_vm._v(_vm._s(_vm.hols))]),
+    _c("h3", { attrs: { id: "final" } }, [_vm._v(_vm._s(_vm.hols))]),
     _vm._v(" "),
-    _c("p", { domProps: { textContent: _vm._s(_vm.direccion) } }),
+    _c(
+      "select",
+      { staticClass: "form-control", attrs: { id: "comienzo" } },
+      _vm._l(_vm.fincas, function(finca) {
+        return _c("option", {
+          domProps: {
+            value: finca.direccion,
+            textContent: _vm._s(finca.direccion)
+          }
+        })
+      }),
+      0
+    ),
     _vm._v(" "),
     _c("div", { attrs: { id: "map" } })
   ])
