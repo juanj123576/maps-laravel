@@ -216,7 +216,7 @@ s
 @section('Scripts')
 
     <script
-        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDKkdaJhiH3lDKHK24-vnTzeG1smZUtlyc&libraries=&v=weekly"
+        src="https://maps.googleapis.com/maps/api/js?key=&libraries=&v=weekly"
 
     ></script>
 
