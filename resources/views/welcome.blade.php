@@ -128,9 +128,7 @@
 
 
                                             <i class="fa fa-search fa-search-custom" aria-hidden="true"></i>
-                                            <div class="dropdown">
-                                                <ul id="list"></ul>
-                                            </div>
+
 
                                         </div>
 

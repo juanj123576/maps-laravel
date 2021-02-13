@@ -1,7 +1,10 @@
 <template>
     <div>
 
+        <select id="comienzo" class="form-control" >
+            <option v-for="finca in fincas" :value="finca.direccion" v-text="finca.direccion"></option>
 
+        </select>
 
         <input style="top:-80px;display: none" placeholder="Search for a Place or an Address."  id="input"   ref="origin"  autofocus/>
 
@@ -13,10 +16,10 @@
 
 <script>
 const { default: Axios } = require('axios');
-import VueGoogleAutocomplete from 'vue-google-autocomplete';
+
 export default {
 name:"Mapa",
-    components: { VueGoogleAutocomplete },
+
     props:{
         hols: String,
         estadoMapa: {
@@ -32,6 +35,7 @@ name:"Mapa",
             direccion:'',
             fincas2:'',
             finca:'',
+            marcador:'',
 
             directionsService:null,
              directionsRenderer:null,
@@ -57,7 +61,7 @@ name:"Mapa",
     ,
 
     mounted() {
-        this.map = new google.maps.Map(document.getElementById("map"), {
+         this.map = new google.maps.Map(document.getElementById("map"), {
             center: { lat: 40.749933, lng: -73.98633 },
             zoom: 13,
         });
@@ -72,12 +76,13 @@ name:"Mapa",
         this.directionsRenderer = new google.maps.DirectionsRenderer();
         this.geocoder = new google.maps.Geocoder();
         this.infoWindow=new google.maps.InfoWindow();
-
-
+        this.marcador=  new google.maps.Marker({map:this.map});
+        document.getElementById("comienzo")
+            .addEventListener("change", this.onChangeHandler);
 
            const autocomplete = new google.maps.places.Autocomplete(this.$refs["origin"],options);
         const marker = new google.maps.Marker({
-           map: this.map,
+            map:this.map,
             anchorPoint: new google.maps.Point(0, -29),
         });
         autocomplete.addListener("place_changed", () => {
@@ -150,15 +155,23 @@ name:"Mapa",
 
         geocodificar(direccion){
             let _this=this;
+
+
+
             this.geocoder.geocode( { 'address': direccion}, function(results, status) {
                 if (status == 'OK') {
 
 
                    _this.map.setCenter(results[0].geometry.location);
-                    var marker = new google.maps.Marker({
-                        map:_this.map,
-                        position: results[0].geometry.location
-                    });
+                    if(_this.marcador==null){
+                        _this.marcador.setMap(_this.map);
+                        _this.marcador.setPosition(results[0].geometry.location);
+                    }else{
+                        _this.marcador.setMap(null);
+                        _this.marcador.setMap(_this.map);
+                        _this.marcador.setPosition(results[0].geometry.location);
+                    }
+
 
 
                 } else {
