@@ -63,7 +63,7 @@
             @if(Auth::check())
                             <mapa :hols="finca.direccion" ref="mapa"></mapa>
                        @else
-                           <mapa :hols="finca.direccion" ref="mapa" ></mapa>
+                           <mapa :hols="finca.direccion" ref="mapa" :estado="true" ></mapa>
                        @endif
 
                    </div>

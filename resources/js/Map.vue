@@ -1,10 +1,12 @@
 <template>
     <div>
+<div v-if="this.estado===false">
+    <select id="comienzo" class="form-control" >
+        <option v-for="finca in fincas" :value="finca.direccion" v-text="finca.direccion"></option>
 
-        <select id="comienzo" class="form-control" >
-            <option v-for="finca in fincas" :value="finca.direccion" v-text="finca.direccion"></option>
+    </select>
+</div>
 
-        </select>
 
         <input style="top:-80px;display: none" placeholder="Search for a Place or an Address."  id="input"   ref="origin"  autofocus/>
 
@@ -22,7 +24,7 @@ name:"Mapa",
 
     props:{
         hols: String,
-        estadoMapa: {
+        estado: {
             type: Boolean,
             default: false
         }
@@ -46,13 +48,13 @@ name:"Mapa",
         };
     },
     created() {
-    if(this.estadoMapa===false){
+    if(this.estado===false){
         this.traerFincas();
 
-        console.log("hola2");
+        console.log(this.estado);
     }else{
 
-        console.log("hola1");
+        console.log(this.estado);
     }
 
 
@@ -61,6 +63,7 @@ name:"Mapa",
     ,
 
     mounted() {
+        console.log(this.estado);
          this.map = new google.maps.Map(document.getElementById("map"), {
             center: { lat: 40.749933, lng: -73.98633 },
             zoom: 13,
@@ -77,8 +80,11 @@ name:"Mapa",
         this.geocoder = new google.maps.Geocoder();
         this.infoWindow=new google.maps.InfoWindow();
         this.marcador=  new google.maps.Marker({map:this.map});
-        document.getElementById("comienzo")
-            .addEventListener("change", this.onChangeHandler);
+        if(this.estado==false){
+            document.getElementById("comienzo")
+                .addEventListener("change", this.onChangeHandler);
+        }
+
 
            const autocomplete = new google.maps.places.Autocomplete(this.$refs["origin"],options);
         const marker = new google.maps.Marker({

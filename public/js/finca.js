@@ -1971,6 +1971,8 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
 var _require = __webpack_require__(/*! axios */ "./node_modules/axios/index.js"),
     Axios = _require["default"];
 
@@ -1978,7 +1980,7 @@ var _require = __webpack_require__(/*! axios */ "./node_modules/axios/index.js")
   name: "Mapa",
   props: {
     hols: String,
-    estadoMapa: {
+    estado: {
       type: Boolean,
       "default": false
     }
@@ -2003,16 +2005,17 @@ var _require = __webpack_require__(/*! axios */ "./node_modules/axios/index.js")
     };
   },
   created: function created() {
-    if (this.estadoMapa === false) {
+    if (this.estado === false) {
       this.traerFincas();
-      console.log("hola2");
+      console.log(this.estado);
     } else {
-      console.log("hola1");
+      console.log(this.estado);
     }
   },
   mounted: function mounted() {
     var _this2 = this;
 
+    console.log(this.estado);
     this.map = new google.maps.Map(document.getElementById("map"), {
       center: {
         lat: 40.749933,
@@ -2036,7 +2039,11 @@ var _require = __webpack_require__(/*! axios */ "./node_modules/axios/index.js")
     this.marcador = new google.maps.Marker({
       map: this.map
     });
-    document.getElementById("comienzo").addEventListener("change", this.onChangeHandler);
+
+    if (this.estado == false) {
+      document.getElementById("comienzo").addEventListener("change", this.onChangeHandler);
+    }
+
     var autocomplete = new google.maps.places.Autocomplete(this.$refs["origin"], options);
     var marker = new google.maps.Marker({
       map: this.map,
@@ -3427,19 +3434,23 @@ var render = function() {
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
   return _c("div", [
-    _c(
-      "select",
-      { staticClass: "form-control", attrs: { id: "comienzo" } },
-      _vm._l(_vm.fincas, function(finca) {
-        return _c("option", {
-          domProps: {
-            value: finca.direccion,
-            textContent: _vm._s(finca.direccion)
-          }
-        })
-      }),
-      0
-    ),
+    this.estado === false
+      ? _c("div", [
+          _c(
+            "select",
+            { staticClass: "form-control", attrs: { id: "comienzo" } },
+            _vm._l(_vm.fincas, function(finca) {
+              return _c("option", {
+                domProps: {
+                  value: finca.direccion,
+                  textContent: _vm._s(finca.direccion)
+                }
+              })
+            }),
+            0
+          )
+        ])
+      : _vm._e(),
     _vm._v(" "),
     _c("input", {
       ref: "origin",
