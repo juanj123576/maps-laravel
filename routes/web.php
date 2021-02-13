@@ -38,11 +38,15 @@ Route::post('/enviarfinca', [App\Http\Controllers\FincaController::class, 'crear
 Route::put('/fincas/{id}', [App\Http\Controllers\FincaController::class, 'update']);
 Route::get('/usuariofincas/{id}', [App\Http\Controllers\FincaController::class, 'traerUsuario']);
 Route::get('/usuariofinca/{id}', [App\Http\Controllers\FincaController::class, 'traerFinca']);
+Route::post('/users/store',  [App\Http\Controllers\firebaseController::class, 'store']);
 
 
 Route::get('/', function () {
     return view('auth.register');
 });
 Route::get('/page', function () {
-    return view('mapa');
+    return view('welcome');
+});
+Route::get('/pagefire', function () {
+    return view('datos');
 });

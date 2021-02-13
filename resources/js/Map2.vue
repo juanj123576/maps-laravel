@@ -2,7 +2,7 @@
     <div>
 
 
-        <div id="map2"></div>
+        <input id="input" type="text" placeholder="Origin" ref="origin" />
 
     </div>
 </template>
@@ -14,44 +14,25 @@ export default {
     name:"Mapa2",
 
     props:{
-        hols: Array[10],
+
     },
     data() {
         return {
-            map2: null,
 
-            fincas:'',
-            direccion:''
         };
     },
     created() {
-        this.traerFincas();
+
 
     },
     mounted() {
-        this.createMap();
+        const autocomplete = new google.maps.places.Autocomplete(this.$refs["origin"]);
 
     },
 
 
     methods: {
-        createMap: function(){
-            this.map2 = new google.maps.Map(document.getElementById('map2'), {
-                center: {lat: -12.1430911, lng: -77.0227697},
-                zoom: 12
-            });
 
-        }
-
-
-        ,traerFincas(){
-            Axios.get('/fincas')
-                .then((res) =>{
-                    this.fincas = res.data;
-                    this.direccion = this.fincas[0].direccion;
-                    console.log( this.fincas[0].direccion);
-                })
-        }
 
     }
 };
@@ -59,12 +40,15 @@ export default {
 
 
 <style >
-#map2{
-    width: 350px;
-    height: 400px;
+#input{
+    width: 300px;
+    height: 40px;
     position: relative;
-    left: 400px;
-    top:-460px;
+    left: 40px;
+    top:-100px;
+}
+.pac-container {
+    z-index: 10000 !important;
 }
 
 

@@ -16,7 +16,9 @@ mapa:mapa,
         fincas2:[],
         finca:{nombre:'',municipio:'',departamento:'',direccion:''},
         modoEditar: false,
-        fincausuario:{}
+        fincausuario:{},
+
+        usuario:{ nombre:'' ,email:'', password:''}
 
 
 
@@ -28,6 +30,7 @@ mapa:mapa,
 
 
     },
+
 
 
     methods:
@@ -46,7 +49,12 @@ mapa:mapa,
                 this.finca.municipio = item.municipio;
                 this.finca.departamento= item.departamento;
                 this.finca.id = item.id;
+
                 this.modoEditar = true;
+                this.$refs.mapa2.traerfinca(item);
+            },
+            verPerfil(){
+                window.location.href =`/page`;
             },
             colocarfinca(finca){
                 this.finca=finca;
@@ -69,10 +77,24 @@ mapa:mapa,
                 const params = {nombre: finca.nombre, direccion: finca.direccion,municipio:finca.municipio,departamento:finca.departamento};
                 axios.put(`/fincas/${finca.id}`, params)
                     .then(res=>{
-                        this.modoEditar = false;
+
                         const index = this.fincas.findIndex(item => item.id === finca.id);
                         this.fincas[index] = res.data;
                     })
+            },
+            agregar_firestore(){
+                if(this.usuario.nombre.trim() === '' && this.usuario.email.trim() === ''&& this.usuario.password.trim() === ''  ){
+                    alert('Debes completar todos los campos antes de guardar');
+                    return;
+                }
+                const userNuevo = this.usuario;
+                this.usuario = {nombre:'' ,email:'', password:''};
+                Axios.post('/users/store', userNuevo)
+                    .then((res) =>{
+                    console.log(res);
+
+                    })
+
             },
             agregarFinca(){
                 if(this.finca.nombre.trim() === '' && this.finca.direccion.trim() === ''&& this.finca.municipio.trim() === '' && this.finca.departamento.trim() === ''  ){
@@ -98,6 +120,11 @@ mapa:mapa,
 
 
                     })
+
+
+
+            },
+            autosuggest(){
 
 
 

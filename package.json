@@ -30,6 +30,8 @@
         "@fortawesome/fontawesome-free": "^5.15.2",
         "google-maps-api-loader": "^1.1.1",
         "laravel-echo": "^1.8.1",
-        "pusher-js": "^7.0.0"
+        "pusher-js": "^7.0.0",
+        "vue-google-autocomplete": "^1.1.0",
+        "vue-meta": "^2.4.0"
     }
 }

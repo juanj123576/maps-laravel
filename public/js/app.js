@@ -1955,8 +1955,7 @@ module.exports = {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
-//
-//
+/* harmony import */ var vue_google_autocomplete__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! vue-google-autocomplete */ "./node_modules/vue-google-autocomplete/src/VueGoogleAutocomplete.vue");
 //
 //
 //
@@ -1973,8 +1972,12 @@ __webpack_require__.r(__webpack_exports__);
 var _require = __webpack_require__(/*! axios */ "./node_modules/axios/index.js"),
     Axios = _require["default"];
 
+
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: "Mapa",
+  components: {
+    VueGoogleAutocomplete: vue_google_autocomplete__WEBPACK_IMPORTED_MODULE_0__["default"]
+  },
   props: {
     hols: String,
     estadoMapa: {
@@ -1988,10 +1991,12 @@ var _require = __webpack_require__(/*! axios */ "./node_modules/axios/index.js")
       fincas: '',
       direccion: '',
       fincas2: '',
+      finca: '',
       directionsService: null,
       directionsRenderer: null,
       infoWindow: null,
       geocoder: null,
+      address: '',
       posicion: {
         lat: 0,
         lng: 0
@@ -2007,23 +2012,70 @@ var _require = __webpack_require__(/*! axios */ "./node_modules/axios/index.js")
     }
   },
   mounted: function mounted() {
-    this.createMap();
+    var _this2 = this;
+
+    this.map = new google.maps.Map(document.getElementById("map"), {
+      center: {
+        lat: 40.749933,
+        lng: -73.98633
+      },
+      zoom: 13
+    });
+    var options = {
+      componentRestrictions: {
+        country: "co"
+      },
+      fields: ["formatted_address", "geometry", "name"],
+      origin: this.map.getCenter(),
+      strictBounds: false,
+      types: ["geocode"]
+    };
+    this.directionsService = new google.maps.DirectionsService();
+    this.directionsRenderer = new google.maps.DirectionsRenderer();
+    this.geocoder = new google.maps.Geocoder();
+    this.infoWindow = new google.maps.InfoWindow();
+    var autocomplete = new google.maps.places.Autocomplete(this.$refs["origin"], options);
+    var marker = new google.maps.Marker({
+      map: this.map,
+      anchorPoint: new google.maps.Point(0, -29)
+    });
+    autocomplete.addListener("place_changed", function () {
+      marker.setVisible(false);
+      var place = autocomplete.getPlace();
+      console.log(place); //  this.finca.direccion=place.formatted_address;
+
+      if (!place.geometry || !place.geometry.location) {
+        // User entered the name of a Place that was not suggested and
+        // pressed the Enter key, or the Place Details request failed.
+        window.alert("No details available for input: '" + place.name + "'");
+        return;
+      } // If the place has a geometry, then present it on a map.
+
+
+      if (place.geometry.viewport) {
+        _this2.map.fitBounds(place.geometry.viewport);
+      } else {
+        _this2.map.setCenter(place.geometry.location);
+
+        _this2.map.setZoom(17);
+      }
+
+      marker.setPosition(place.geometry.location);
+      marker.setVisible(true);
+    });
   },
   methods: {
     traerFincas: function traerFincas() {
-      var _this2 = this;
-
-      Axios.get('/fincas').then(function (res) {
-        _this2.fincas = res.data;
-        _this2.direccion = _this2.fincas[0].direccion;
-        console.log(_this2.fincas[0].direccion);
-      });
-    },
-    traerFincasdireccion: function traerFincasdireccion() {
       var _this3 = this;
 
-      Axios.get("/fincasUsuario/").then(function (res) {
-        _this3.fincas2 = res.data;
+      Axios.get('/fincas').then(function (res) {
+        if (res != null) {
+          _this3.fincas = res.data;
+          _this3.direccion = _this3.fincas[0].direccion;
+          console.log(_this3.fincas[0].direccion);
+        }
+      })["catch"](function (e) {
+        console.log(e);
       });
     },
     createMap: function createMap() {
@@ -2034,12 +2086,14 @@ var _require = __webpack_require__(/*! axios */ "./node_modules/axios/index.js")
         },
         zoom: 12
       });
-      console.log("holaaaaaaaaaaaaaaaaaaaaaaa");
       this.directionsService = new google.maps.DirectionsService();
       this.directionsRenderer = new google.maps.DirectionsRenderer();
       this.geocoder = new google.maps.Geocoder();
       this.infoWindow = new google.maps.InfoWindow();
       document.getElementById("comienzo").addEventListener("change", this.onChangeHandler);
+    },
+    traerfinca: function traerfinca(finca) {
+      this.finca = finca;
     },
     geocodificar: function geocodificar(direccion) {
       var _this = this;
@@ -2057,12 +2111,6 @@ var _require = __webpack_require__(/*! axios */ "./node_modules/axios/index.js")
         } else {
           alert('Geocode was not successful for the following reason: ' + status);
         }
-      });
-    },
-    añadirmarcador: function aAdirmarcador() {
-      var marker = new google.maps.Marker({
-        map: this.map,
-        position: posicion
       });
     },
     onChangeHandler: function onChangeHandler() {
@@ -2086,12 +2134,12 @@ var _require = __webpack_require__(/*! axios */ "./node_modules/axios/index.js")
           directionsRenderer.setDirections(response);
           directionsRenderer.setMap(_this4.map);
           console.log(response.routes[0].legs[0].duration.text);
-          var _posicion = {
+          var posicion = {
             lat: 0,
             lng: 0
           };
-          _posicion.lat = response.routes[0].legs[0].end_location.lat();
-          _posicion.lng = response.routes[0].legs[0].end_location.lng();
+          posicion.lat = response.routes[0].legs[0].end_location.lat();
+          posicion.lng = response.routes[0].legs[0].end_location.lng();
           var duracion = response.routes[0].legs[0].duration.text;
           var distancia = response.routes[0].legs[0].distance.text;
           var datos = "Tiempo:" + " " + duracion + " " + "Distancia:" + " " + distancia;
@@ -2102,7 +2150,7 @@ var _require = __webpack_require__(/*! axios */ "./node_modules/axios/index.js")
 
           _this4.infoWindow.open(_this4.map);
 
-          _this4.infoWindow.setPosition(_posicion);
+          _this4.infoWindow.setPosition(posicion);
         } else {
           window.alert("Directions request failed due to " + status);
         }
@@ -2127,12 +2175,12 @@ var _require = __webpack_require__(/*! axios */ "./node_modules/axios/index.js")
 
           _this5.directionsRenderer.setMap(_this5.map);
 
-          var _posicion2 = {
+          var posicion = {
             lat: 0,
             lng: 0
           };
-          _posicion2.lat = response.routes[0].legs[0].end_location.lat();
-          _posicion2.lng = response.routes[0].legs[0].end_location.lng();
+          posicion.lat = response.routes[0].legs[0].end_location.lat();
+          posicion.lng = response.routes[0].legs[0].end_location.lng();
           var duracion = response.routes[0].legs[0].duration.text;
           var distancia = response.routes[0].legs[0].distance.text;
           var datos = "Tiempo:" + " " + duracion + " " + "Distancia:" + " " + distancia;
@@ -2143,7 +2191,7 @@ var _require = __webpack_require__(/*! axios */ "./node_modules/axios/index.js")
 
           _this5.infoWindow.open(_this5.map);
 
-          _this5.infoWindow.setPosition(_posicion2);
+          _this5.infoWindow.setPosition(posicion);
         } else {
           window.alert("Directions request failed due to " + status);
         }
@@ -2178,42 +2226,15 @@ var _require = __webpack_require__(/*! axios */ "./node_modules/axios/index.js")
 
 /* harmony default export */ __webpack_exports__["default"] = ({
   name: "Mapa2",
-  props: {
-    hols: Array[10]
-  },
+  props: {},
   data: function data() {
-    return {
-      map2: null,
-      fincas: '',
-      direccion: ''
-    };
+    return {};
   },
-  created: function created() {
-    this.traerFincas();
-  },
+  created: function created() {},
   mounted: function mounted() {
-    this.createMap();
+    var autocomplete = new google.maps.places.Autocomplete(this.$refs["origin"]);
   },
-  methods: {
-    createMap: function createMap() {
-      this.map2 = new google.maps.Map(document.getElementById('map2'), {
-        center: {
-          lat: -12.1430911,
-          lng: -77.0227697
-        },
-        zoom: 12
-      });
-    },
-    traerFincas: function traerFincas() {
-      var _this = this;
-
-      Axios.get('/fincas').then(function (res) {
-        _this.fincas = res.data;
-        _this.direccion = _this.fincas[0].direccion;
-        console.log(_this.fincas[0].direccion);
-      });
-    }
-  }
+  methods: {}
 });
 
 /***/ }),
@@ -6650,7 +6671,7 @@ exports = module.exports = __webpack_require__(/*! ../../node_modules/css-loader
 
 
 // module
-exports.push([module.i, "\n#map{\r\n    width: 350px;\r\n    height: 400px;\r\n    position: relative;\r\n    left: 40px;\r\n    top:0px;\n}\r\n\r\n", ""]);
+exports.push([module.i, "\n#map{\n    width: 350px;\n    height: 400px;\n    position: relative;\n    left: 40px;\n    top:0px;\n}\n#input{\n    position: relative;\n    width: 150px;\n    height: 20px;\n\n    left: 40px;\n    top:0px;\n}\n.pac-container {\n    z-index: 10000 !important;\n}\n\n", ""]);
 
 // exports
 
@@ -6669,7 +6690,7 @@ exports = module.exports = __webpack_require__(/*! ../../node_modules/css-loader
 
 
 // module
-exports.push([module.i, "\n#map2{\n    width: 350px;\n    height: 400px;\n    position: relative;\n    left: 400px;\n    top:-460px;\n}\n\n\n", ""]);
+exports.push([module.i, "\n#input{\n    width: 300px;\n    height: 40px;\n    position: relative;\n    left: 40px;\n    top:-100px;\n}\n.pac-container {\n    z-index: 10000 !important;\n}\n\n\n", ""]);
 
 // exports
 
@@ -38479,6 +38500,490 @@ exports.clearImmediate = (typeof self !== "undefined" && self.clearImmediate) ||
 
 /***/ }),
 
+/***/ "./node_modules/vue-google-autocomplete/src/VueGoogleAutocomplete.vue":
+/*!****************************************************************************!*\
+  !*** ./node_modules/vue-google-autocomplete/src/VueGoogleAutocomplete.vue ***!
+  \****************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _VueGoogleAutocomplete_vue_vue_type_template_id_a72a90ea___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./VueGoogleAutocomplete.vue?vue&type=template&id=a72a90ea& */ "./node_modules/vue-google-autocomplete/src/VueGoogleAutocomplete.vue?vue&type=template&id=a72a90ea&");
+/* harmony import */ var _VueGoogleAutocomplete_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./VueGoogleAutocomplete.vue?vue&type=script&lang=js& */ "./node_modules/vue-google-autocomplete/src/VueGoogleAutocomplete.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport *//* harmony import */ var _vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../vue-loader/lib/runtime/componentNormalizer.js */ "./node_modules/vue-loader/lib/runtime/componentNormalizer.js");
+
+
+
+
+
+/* normalize component */
+
+var component = Object(_vue_loader_lib_runtime_componentNormalizer_js__WEBPACK_IMPORTED_MODULE_2__["default"])(
+  _VueGoogleAutocomplete_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_1__["default"],
+  _VueGoogleAutocomplete_vue_vue_type_template_id_a72a90ea___WEBPACK_IMPORTED_MODULE_0__["render"],
+  _VueGoogleAutocomplete_vue_vue_type_template_id_a72a90ea___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"],
+  false,
+  null,
+  null,
+  null
+  
+)
+
+/* hot reload */
+if (false) { var api; }
+component.options.__file = "node_modules/vue-google-autocomplete/src/VueGoogleAutocomplete.vue"
+/* harmony default export */ __webpack_exports__["default"] = (component.exports);
+
+/***/ }),
+
+/***/ "./node_modules/vue-google-autocomplete/src/VueGoogleAutocomplete.vue?vue&type=script&lang=js&":
+/*!*****************************************************************************************************!*\
+  !*** ./node_modules/vue-google-autocomplete/src/VueGoogleAutocomplete.vue?vue&type=script&lang=js& ***!
+  \*****************************************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _vue_loader_lib_index_js_vue_loader_options_VueGoogleAutocomplete_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../vue-loader/lib??vue-loader-options!./VueGoogleAutocomplete.vue?vue&type=script&lang=js& */ "./node_modules/vue-loader/lib/index.js?!./node_modules/vue-google-autocomplete/src/VueGoogleAutocomplete.vue?vue&type=script&lang=js&");
+/* empty/unused harmony star reexport */ /* harmony default export */ __webpack_exports__["default"] = (_vue_loader_lib_index_js_vue_loader_options_VueGoogleAutocomplete_vue_vue_type_script_lang_js___WEBPACK_IMPORTED_MODULE_0__["default"]); 
+
+/***/ }),
+
+/***/ "./node_modules/vue-google-autocomplete/src/VueGoogleAutocomplete.vue?vue&type=template&id=a72a90ea&":
+/*!***********************************************************************************************************!*\
+  !*** ./node_modules/vue-google-autocomplete/src/VueGoogleAutocomplete.vue?vue&type=template&id=a72a90ea& ***!
+  \***********************************************************************************************************/
+/*! exports provided: render, staticRenderFns */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _vue_loader_lib_loaders_templateLoader_js_vue_loader_options_vue_loader_lib_index_js_vue_loader_options_VueGoogleAutocomplete_vue_vue_type_template_id_a72a90ea___WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! -!../../vue-loader/lib/loaders/templateLoader.js??vue-loader-options!../../vue-loader/lib??vue-loader-options!./VueGoogleAutocomplete.vue?vue&type=template&id=a72a90ea& */ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./node_modules/vue-google-autocomplete/src/VueGoogleAutocomplete.vue?vue&type=template&id=a72a90ea&");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "render", function() { return _vue_loader_lib_loaders_templateLoader_js_vue_loader_options_vue_loader_lib_index_js_vue_loader_options_VueGoogleAutocomplete_vue_vue_type_template_id_a72a90ea___WEBPACK_IMPORTED_MODULE_0__["render"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return _vue_loader_lib_loaders_templateLoader_js_vue_loader_options_vue_loader_lib_index_js_vue_loader_options_VueGoogleAutocomplete_vue_vue_type_template_id_a72a90ea___WEBPACK_IMPORTED_MODULE_0__["staticRenderFns"]; });
+
+
+
+/***/ }),
+
+/***/ "./node_modules/vue-loader/lib/index.js?!./node_modules/vue-google-autocomplete/src/VueGoogleAutocomplete.vue?vue&type=script&lang=js&":
+/*!*******************************************************************************************************************************************************!*\
+  !*** ./node_modules/vue-loader/lib??vue-loader-options!./node_modules/vue-google-autocomplete/src/VueGoogleAutocomplete.vue?vue&type=script&lang=js& ***!
+  \*******************************************************************************************************************************************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+    const ADDRESS_COMPONENTS = {
+        street_number: 'short_name',
+        route: 'long_name',
+        locality: 'long_name',
+        administrative_area_level_1: 'short_name',
+        administrative_area_level_2: 'county',
+        country: 'long_name',
+        postal_code: 'short_name'
+    };
+
+    const CITIES_TYPE = ['locality', 'administrative_area_level_3'];
+    const REGIONS_TYPE = ['locality', 'sublocality', 'postal_code', 'country',
+        'administrative_area_level_1', 'administrative_area_level_2'];
+
+    /* harmony default export */ __webpack_exports__["default"] = ({
+        name: 'VueGoogleAutocomplete',
+
+        props: {
+          id: {
+            type: String,
+            required: true
+          },
+
+          classname: String,
+
+          placeholder: {
+            type: String,
+            default: 'Start typing'
+          },
+
+          types: {
+            type: String,
+            default: 'address'
+          },
+
+          country: {
+            type: [String, Array],
+            default: null
+          },
+
+          enableGeolocation: {
+            type: Boolean,
+            default: false
+          },
+
+          geolocationOptions: {
+            type: Object,
+            default: null
+          }
+        },
+
+        data() {
+            return {
+                /**
+                 * The Autocomplete object.
+                 *
+                 * @type {Autocomplete}
+                 * @link https://developers.google.com/maps/documentation/javascript/reference#Autocomplete
+                 */
+                autocomplete: null,
+
+                /**
+                 * Autocomplete input text
+                 * @type {String}
+                 */
+                autocompleteText: '',
+
+                geolocation: {
+                    /**
+                     * Google Geocoder Objet
+                     * @type {Geocoder}
+                     * @link https://developers.google.com/maps/documentation/javascript/reference#Geocoder
+                     */
+                    geocoder: null,
+
+                    /**
+                     * Filled after geolocate result
+                     * @type {Coordinates}
+                     * @link https://developer.mozilla.org/en-US/docs/Web/API/Coordinates
+                     */
+                    loc: null,
+
+                    /**
+                     * Filled after geolocate result
+                     * @type {Position}
+                     * @link https://developer.mozilla.org/en-US/docs/Web/API/Position
+                     */
+                    position: null
+                }
+            }
+        },
+
+        watch: {
+            autocompleteText: function (newVal, oldVal) {
+	            this.$emit('inputChange', { newVal, oldVal }, this.id);
+            },
+            country: function(newVal, oldVal) {
+              this.autocomplete.setComponentRestrictions({
+                country: this.country === null ? [] : this.country
+              });
+            }
+        },
+
+        mounted: function() {
+          const options = {};
+
+          if (this.types) {
+            options.types = [this.types];
+          }
+
+          if (this.country) {
+            options.componentRestrictions = {
+              country: this.country
+            };
+          }
+
+          this.autocomplete = new google.maps.places.Autocomplete(
+                document.getElementById(this.id),
+                options
+            );
+
+          this.autocomplete.addListener('place_changed', this.onPlaceChanged);
+        },
+
+        methods: {
+            /**
+             * When a place changed
+             */
+            onPlaceChanged() {
+                let place = this.autocomplete.getPlace();
+
+                if (!place.geometry) {
+                  // User entered the name of a Place that was not suggested and
+                  // pressed the Enter key, or the Place Details request failed.
+                  this.$emit('no-results-found', place, this.id);
+                  return;
+                }
+
+                if (place.address_components !== undefined) {
+                    // return returnData object and PlaceResult object
+                    this.$emit('placechanged', this.formatResult(place), place, this.id);
+
+                    // update autocompleteText then emit change event
+                    this.autocompleteText = document.getElementById(this.id).value
+                    this.onChange()
+                }
+            },
+
+            /**
+             * When the input gets focus
+             */
+            onFocus() {
+              this.biasAutocompleteLocation();
+              this.$emit('focus');
+            },
+
+            /**
+             * When the input loses focus
+             */
+            onBlur() {
+              this.$emit('blur');
+            },
+
+            /**
+             * When the input got changed
+             */
+            onChange() {
+              this.$emit('change', this.autocompleteText);
+            },
+
+            /**
+             * When a key gets pressed
+             * @param  {Event} event A keypress event
+             */
+            onKeyPress(event) {
+              this.$emit('keypress', event);
+            },
+
+            /**
+             * When a keyup occurs
+             * @param  {Event} event A keyup event
+             */
+            onKeyUp(event) {
+              this.$emit('keyup', event);
+            },
+
+            /**
+             * Clear the input
+             */
+            clear() {
+              this.autocompleteText = ''
+            },
+
+            /**
+             * Focus the input
+             */
+            focus() {
+              this.$refs.autocomplete.focus()
+            },
+
+            /**
+             * Blur the input
+             */
+            blur() {
+              this.$refs.autocomplete.blur()
+            },
+
+            /**
+             * Update the value of the input
+             * @param  {String} value
+             */
+            update (value) {
+              this.autocompleteText = value
+            },
+
+            /**
+             * Update the coordinates of the input
+             * @param  {Coordinates} value
+             */
+            updateCoordinates (value) {
+                if (!value && !(value.lat || value.lng)) return;
+                if (!this.geolocation.geocoder) this.geolocation.geocoder = new google.maps.Geocoder();
+                this.geolocation.geocoder.geocode({'location': value}, (results, status) => {
+                    if (status === 'OK') {
+                        results = this.filterGeocodeResultTypes(results);
+                        if (results[0]) {
+                            this.$emit('placechanged', this.formatResult(results[0]), results[0], this.id);
+                            this.update(results[0].formatted_address);
+                        } else {
+                            this.$emit('error', 'no result for provided coordinates');
+                        }
+                    } else {
+                        this.$emit('error', 'error getting address from coords');
+                    }
+                })
+            },
+
+            /**
+             * Update location based on navigator geolocation
+             */
+            geolocate () {
+                this.updateGeolocation ((geolocation, position) => {
+                    this.updateCoordinates(geolocation)
+                })
+            },
+
+            /**
+             * Update internal location from navigator geolocation
+             * @param  {Function} (geolocation, position)
+             */
+            updateGeolocation (callback = null) {
+                if (navigator.geolocation) {
+                    let options = {};
+                    if(this.geolocationOptions) Object.assign(options, this.geolocationOptions);
+                    navigator.geolocation.getCurrentPosition(position => {
+                        let geolocation = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude
+                        };
+                        this.geolocation.loc = geolocation;
+                        this.geolocation.position = position;
+
+                        if (callback) callback(geolocation, position);
+                    }, err => {
+                        this.$emit('error', 'Cannot get Coordinates from navigator', err);
+                    }, options);
+                }
+            },
+
+
+            // Bias the autocomplete object to the user's geographical location,
+            // as supplied by the browser's 'navigator.geolocation' object.
+            biasAutocompleteLocation () {
+                if (this.enableGeolocation) {
+                    this.updateGeolocation((geolocation, position) => {
+                        let circle = new google.maps.Circle({
+                            center: geolocation,
+                            radius: position.coords.accuracy
+                        });
+                        this.autocomplete.setBounds(circle.getBounds());
+                    })
+                }
+            },
+
+            /**
+             * Format result from Geo google APIs
+             * @param place
+             * @returns {{formatted output}}
+             */
+            formatResult (place) {
+                let returnData = {};
+                for (let i = 0; i < place.address_components.length; i++) {
+                    let addressType = place.address_components[i].types[0];
+
+                    if (ADDRESS_COMPONENTS[addressType]) {
+                        let val = place.address_components[i][ADDRESS_COMPONENTS[addressType]];
+                        returnData[addressType] = val;
+                    }
+                }
+
+                returnData['latitude'] = place.geometry.location.lat();
+                returnData['longitude'] = place.geometry.location.lng();
+                return returnData
+            },
+
+            /**
+             * Extract configured types out of raw result as
+             * Geocode API does not allow to do it
+             * @param results
+             * @returns {GeocoderResult}
+             * @link https://developers.google.com/maps/documentation/javascript/reference#GeocoderResult
+             */
+            filterGeocodeResultTypes (results) {
+                if (!results || !this.types) return results;
+                let output = [];
+                let types = [this.types];
+                if (types.includes('(cities)')) types = types.concat(CITIES_TYPE);
+                if (types.includes('(regions)')) types = types.concat(REGIONS_TYPE);
+
+                for (let r of results) {
+                    for (let t of r.types) {
+                        if (types.includes(t)) {
+                            output.push(r);
+                            break;
+                        }
+                    }
+                }
+                return output;
+            }
+        }
+    });
+
+
+/***/ }),
+
+/***/ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./node_modules/vue-google-autocomplete/src/VueGoogleAutocomplete.vue?vue&type=template&id=a72a90ea&":
+/*!*****************************************************************************************************************************************************************************************************************************************!*\
+  !*** ./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib??vue-loader-options!./node_modules/vue-google-autocomplete/src/VueGoogleAutocomplete.vue?vue&type=template&id=a72a90ea& ***!
+  \*****************************************************************************************************************************************************************************************************************************************/
+/*! exports provided: render, staticRenderFns */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "render", function() { return render; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "staticRenderFns", function() { return staticRenderFns; });
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c("input", {
+    directives: [
+      {
+        name: "model",
+        rawName: "v-model",
+        value: _vm.autocompleteText,
+        expression: "autocompleteText"
+      }
+    ],
+    ref: "autocomplete",
+    class: _vm.classname,
+    attrs: { type: "text", id: _vm.id, placeholder: _vm.placeholder },
+    domProps: { value: _vm.autocompleteText },
+    on: {
+      focus: function($event) {
+        return _vm.onFocus()
+      },
+      blur: function($event) {
+        return _vm.onBlur()
+      },
+      change: _vm.onChange,
+      keypress: _vm.onKeyPress,
+      keyup: _vm.onKeyUp,
+      input: function($event) {
+        if ($event.target.composing) {
+          return
+        }
+        _vm.autocompleteText = $event.target.value
+      }
+    }
+  })
+}
+var staticRenderFns = []
+render._withStripped = true
+
+
+
+/***/ }),
+
 /***/ "./node_modules/vue-loader/lib/loaders/templateLoader.js?!./node_modules/vue-loader/lib/index.js?!./resources/js/Map.vue?vue&type=template&id=30e3fba4&":
 /*!*******************************************************************************************************************************************************************************************!*\
   !*** ./node_modules/vue-loader/lib/loaders/templateLoader.js??vue-loader-options!./node_modules/vue-loader/lib??vue-loader-options!./resources/js/Map.vue?vue&type=template&id=30e3fba4& ***!
@@ -38495,21 +39000,15 @@ var render = function() {
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
   return _c("div", [
-    _c("h3", { attrs: { id: "final" } }, [_vm._v(_vm._s(_vm.hols))]),
-    _vm._v(" "),
-    _c(
-      "select",
-      { staticClass: "form-control", attrs: { id: "comienzo" } },
-      _vm._l(_vm.fincas, function(finca) {
-        return _c("option", {
-          domProps: {
-            value: finca.direccion,
-            textContent: _vm._s(finca.direccion)
-          }
-        })
-      }),
-      0
-    ),
+    _c("input", {
+      ref: "origin",
+      staticStyle: { top: "-80px", display: "none" },
+      attrs: {
+        placeholder: "Search for a Place or an Address.",
+        id: "input",
+        autofocus: ""
+      }
+    }),
     _vm._v(" "),
     _c("div", { attrs: { id: "map" } })
   ])
@@ -38536,16 +39035,14 @@ var render = function() {
   var _vm = this
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
-  return _vm._m(0)
+  return _c("div", [
+    _c("input", {
+      ref: "origin",
+      attrs: { id: "input", type: "text", placeholder: "Origin" }
+    })
+  ])
 }
-var staticRenderFns = [
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c("div", [_c("div", { attrs: { id: "map2" } })])
-  }
-]
+var staticRenderFns = []
 render._withStripped = true
 
 
